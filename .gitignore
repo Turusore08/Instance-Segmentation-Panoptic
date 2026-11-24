@@ -1,0 +1,6 @@
+/panoptic-indoor-segmentation.v1i.yolov8-obb/
+/foto manual/
+/kaggle_output_viscom/checkpoints/
+/kaggle_output_viscom/yolo_dataset/
+/kaggle_output_viscom/exports_tflite/
+/kaggle_output_viscom/logs/

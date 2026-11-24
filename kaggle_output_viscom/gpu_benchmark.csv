@@ -1,0 +1,10 @@
+model,scenario,num_gpus,wall_clock_time_sec,total_peak_vram_mb,mAP50,mAP50_95,best_val_loss,gpu_0_mb,gpu_1_mb,weights_path
+Mask2Former-Large,A,2,7808.34,11154.0,0.3661,0.2066,42.8714,6403.0,4751.0,
+Mask2Former-Large,B,2,7818.18,12100.0,0.3552,0.2092,41.9611,7329.0,4771.0,
+Mask2Former-Large,C,2,7966.51,12044.0,0.3624,0.2045,41.3677,7251.0,4793.0,
+Mask-RCNN-Large,A,2,2948.77,4234.0,0.1887,0.0966,0.4803,2437.0,1797.0,
+Mask-RCNN-Large,B,2,2937.82,4318.0,0.194,0.097,0.6876,2571.0,1747.0,
+Mask-RCNN-Large,C,2,3005.6,4400.0,0.1976,0.0988,0.8997,2617.0,1783.0,
+YOLOv26l-seg (yolo26l-seg),A,2,1099.78,10686.0,0.2831,0.1632,2.2633,6581.0,4105.0,/kaggle/working/checkpoints/yolo26l_seg_scenario_A_best.pt
+YOLOv26l-seg (yolo26l-seg),B,2,1144.39,11756.0,0.3065,0.1882,2.0552,6543.0,5213.0,/kaggle/working/checkpoints/yolo26l_seg_scenario_B_best.pt
+YOLOv26l-seg (yolo26l-seg),C,2,1160.27,9998.0,0.3021,0.1771,2.0034,5709.0,4289.0,/kaggle/working/checkpoints/yolo26l_seg_scenario_C_best.pt

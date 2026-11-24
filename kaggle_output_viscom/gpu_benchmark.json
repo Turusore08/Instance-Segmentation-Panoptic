@@ -1,0 +1,131 @@
+[
+  {
+    "model": "Mask2Former-Large",
+    "scenario": "A",
+    "num_gpus": 2,
+    "wall_clock_time_sec": 7808.34,
+    "total_peak_vram_mb": 11154.0,
+    "peak_vram_per_gpu_mb": {
+      "gpu_0_mb": 6403.0,
+      "gpu_1_mb": 4751.0
+    },
+    "mAP50": 0.3661,
+    "mAP50_95": 0.2066,
+    "best_val_loss": 42.8714
+  },
+  {
+    "model": "Mask2Former-Large",
+    "scenario": "B",
+    "num_gpus": 2,
+    "wall_clock_time_sec": 7818.18,
+    "total_peak_vram_mb": 12100.0,
+    "peak_vram_per_gpu_mb": {
+      "gpu_0_mb": 7329.0,
+      "gpu_1_mb": 4771.0
+    },
+    "mAP50": 0.3552,
+    "mAP50_95": 0.2092,
+    "best_val_loss": 41.9611
+  },
+  {
+    "model": "Mask2Former-Large",
+    "scenario": "C",
+    "num_gpus": 2,
+    "wall_clock_time_sec": 7966.51,
+    "total_peak_vram_mb": 12044.0,
+    "peak_vram_per_gpu_mb": {
+      "gpu_0_mb": 7251.0,
+      "gpu_1_mb": 4793.0
+    },
+    "mAP50": 0.3624,
+    "mAP50_95": 0.2045,
+    "best_val_loss": 41.3677
+  },
+  {
+    "model": "Mask-RCNN-Large",
+    "scenario": "A",
+    "num_gpus": 2,
+    "wall_clock_time_sec": 2948.77,
+    "total_peak_vram_mb": 4234.0,
+    "peak_vram_per_gpu_mb": {
+      "gpu_0_mb": 2437.0,
+      "gpu_1_mb": 1797.0
+    },
+    "mAP50": 0.1887,
+    "mAP50_95": 0.0966,
+    "best_val_loss": 0.4803
+  },
+  {
+    "model": "Mask-RCNN-Large",
+    "scenario": "B",
+    "num_gpus": 2,
+    "wall_clock_time_sec": 2937.82,
+    "total_peak_vram_mb": 4318.0,
+    "peak_vram_per_gpu_mb": {
+      "gpu_0_mb": 2571.0,
+      "gpu_1_mb": 1747.0
+    },
+    "mAP50": 0.194,
+    "mAP50_95": 0.097,
+    "best_val_loss": 0.6876
+  },
+  {
+    "model": "Mask-RCNN-Large",
+    "scenario": "C",
+    "num_gpus": 2,
+    "wall_clock_time_sec": 3005.6,
+    "total_peak_vram_mb": 4400.0,
+    "peak_vram_per_gpu_mb": {
+      "gpu_0_mb": 2617.0,
+      "gpu_1_mb": 1783.0
+    },
+    "mAP50": 0.1976,
+    "mAP50_95": 0.0988,
+    "best_val_loss": 0.8997
+  },
+  {
+    "model": "YOLOv26l-seg (yolo26l-seg)",
+    "scenario": "A",
+    "num_gpus": 2,
+    "wall_clock_time_sec": 1099.78,
+    "total_peak_vram_mb": 10686.0,
+    "peak_vram_per_gpu_mb": {
+      "gpu_0_mb": 6581.0,
+      "gpu_1_mb": 4105.0
+    },
+    "mAP50": 0.2831,
+    "mAP50_95": 0.1632,
+    "best_val_loss": 2.2633,
+    "weights_path": "/kaggle/working/checkpoints/yolo26l_seg_scenario_A_best.pt"
+  },
+  {
+    "model": "YOLOv26l-seg (yolo26l-seg)",
+    "scenario": "B",
+    "num_gpus": 2,
+    "wall_clock_time_sec": 1144.39,
+    "total_peak_vram_mb": 11756.0,
+    "peak_vram_per_gpu_mb": {
+      "gpu_0_mb": 6543.0,
+      "gpu_1_mb": 5213.0
+    },
+    "mAP50": 0.3065,
+    "mAP50_95": 0.1882,
+    "best_val_loss": 2.0552,
+    "weights_path": "/kaggle/working/checkpoints/yolo26l_seg_scenario_B_best.pt"
+  },
+  {
+    "model": "YOLOv26l-seg (yolo26l-seg)",
+    "scenario": "C",
+    "num_gpus": 2,
+    "wall_clock_time_sec": 1160.27,
+    "total_peak_vram_mb": 9998.0,
+    "peak_vram_per_gpu_mb": {
+      "gpu_0_mb": 5709.0,
+      "gpu_1_mb": 4289.0
+    },
+    "mAP50": 0.3021,
+    "mAP50_95": 0.1771,
+    "best_val_loss": 2.0034,
+    "weights_path": "/kaggle/working/checkpoints/yolo26l_seg_scenario_C_best.pt"
+  }
+]
