@@ -4,3 +4,5 @@
 /kaggle_output_viscom/yolo_dataset/
 /kaggle_output_viscom/exports_tflite/
 /kaggle_output_viscom/logs/
+/kaggle_output_viscom/yolo26l-seg.pt
+
