@@ -5,4 +5,9 @@
 /kaggle_output_viscom/exports_tflite/
 /kaggle_output_viscom/logs/
 /kaggle_output_viscom/yolo26l-seg.pt
+.venv/
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+/viskom-data-sendiri
 
