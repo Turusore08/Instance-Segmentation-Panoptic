@@ -10,4 +10,4 @@ __pycache__/
 *.pyc
 .streamlit/secrets.toml
 /viskom-data-sendiri
-
+/assets/
