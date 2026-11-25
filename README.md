@@ -16,6 +16,30 @@ Pelatihan dilakukan di lingkungan Kaggle Notebook (`2x NVIDIA T4`, `IMG_SIZE = 4
 | **YOLOv26l-seg** (`yolo26l-seg`) | **B** | `0.3065` | `0.1882` | `1.144,39` | `11.756` | Tercepat (~19 menit), mengungguli baseline Roboflow (`yolov11n-seg` `mAP@50 = 0.2540`), ekspor TFLite INT8 (`29 MB`) sukses. |
 | **Mask-RCNN-Large** (`ResNet-101-FPN`) | **C** | `0.1976` | `0.0988` | `3.005,60` | `4.400` | Paling hemat VRAM, namun konvergensi kepala klasifikasi belum optimal dalam 15 epoch. |
 
+### 1.1 Perbandingan Eksperimen Augmentasi (Skenario A vs B vs C)
+
+Setiap arsitektur diuji pada tiga skenario augmentasi data yang dikendalikan secara identik (`IMG_SIZE = 448`, `EPOCHS = 15`, `2x NVIDIA T4`):
+- **Skenario A (Tanpa Augmentasi / Raw)**: Hanya *resize* `448x448` dan normalisasi piksel standar tanpa manipulasi geometri atau fotometrik.
+- **Skenario B (Default Framework)**: *HorizontalFlip* (`p=0.5`) bawaan untuk Mask2Former & Mask R-CNN; serta *Mosaic*, *HSV jitter*, translasi, skala, dan *flip* standar Ultralytics untuk `YOLOv26l-seg`.
+- **Skenario C (Custom Albumentations Indoor)**: Pipeline khusus ruangan indoor (`HorizontalFlip`, `ShiftScaleRotate`, `RandomBrightnessContrast`, dan `GaussianBlur`) untuk meniru variasi pencahayaan lampu, sudut kamera genggam, dan *blur* ringan.
+
+| Model | Skenario | Val `mAP@50` | Val `mAP@50-95` | Selisih `mAP@50` vs A | Best Val Loss | Durasi GPU (s) | Peak VRAM (MB) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Mask2Former-Large** | **A** (Raw) | **`0.3661`** | `0.2066` | Baseline | `42.8714` | `7808.34` | `11154` |
+| **Mask2Former-Large** | **B** (Default) | `0.3552` | **`0.2092`** | `-0.0109` (`-3,0%`) | `41.9611` | `7818.18` | `12100` |
+| **Mask2Former-Large** | **C** (Custom) | `0.3624` | `0.2045` | `-0.0037` (`-1,0%`) | **`41.3677`** | `7966.51` | `12044` |
+| **YOLOv26l-seg** | **A** (Raw) | `0.2831` | `0.1632` | Baseline | `2.2633` | `1099.78` | `10686` |
+| **YOLOv26l-seg** | **B** (Default) | **`0.3065`** | **`0.1882`** | **`+0.0234`** (`+8,3%`) | `2.0552` | `1144.39` | `11756` |
+| **YOLOv26l-seg** | **C** (Custom) | `0.3021` | `0.1771` | `+0.0190` (`+6,7%`) | **`2.0034`** | `1160.27` | `9998` |
+| **Mask-RCNN-Large** | **A** (Raw) | `0.1887` | `0.0966` | Baseline | `0.4803` | `2948.77` | `4234` |
+| **Mask-RCNN-Large** | **B** (Default) | `0.1940` | `0.0970` | `+0.0053` (`+2,8%`) | `0.6876` | `2937.82` | `4318` |
+| **Mask-RCNN-Large** | **C** (Custom) | **`0.1976`** | **`0.0988`** | **`+0.0089`** (`+4,7%`) | `0.8997` | `3005.60` | `4400` |
+
+**Analisis Perbandingan Skenario A, B, dan C**:
+- **Skenario A cepat mengalami *overfitting***: Pada `Mask2Former-Large` (A), `train_loss` anjlok tajam (`64.1871 -> 17.8991`), sementara `val_loss` mencapai titik terbaik di epoch 7 (`42.8714`) lalu memburuk hingga `47.4237` di epoch 15. Pola serupa terlihat pada `YOLOv26l-seg` (A) di mana `val/seg_loss` terbaik `2.2633` terjadi lebih awal pada epoch 5 lalu naik ke `2.6404` di epoch 15 dengan `mAP@50` terendah (`0.2831`).
+- **Skenario B memberi *IoU mask* paling tajam pada `Mask2Former-Large` dan `YOLOv26l-seg`**: *Mosaic* + *scale jitter* bawaan Ultralytics mengangkat `YOLOv26l-seg` hingga **`+8,3%` `mAP@50`** (`0.2831 -> 0.3065`) dan `+0.0250` `mAP@50-95` (`0.1882`), sementara *HorizontalFlip* pada `Mask2Former-Large` menghasilkan `mAP@50-95` validasi tertinggi di seluruh eksperimen (`0.2092`) tanpa mendistorsi kotak OBB 4-titik.
+- **Skenario C paling kuat menekan `val_loss` & mengangkat `Mask-RCNN-Large`**: Kombinasi *RandomBrightnessContrast*, *ShiftScaleRotate*, dan *GaussianBlur* menghasilkan *validation loss* terendah pada `Mask2Former-Large` (`41.3677`) dan `YOLOv26l-seg` (`2.0034`), sekaligus memberikan performa terbaik untuk `Mask-RCNN-Large` (`0.1976 / 0.0988`). Sedikit lebih rendahnya `mAP@50-95` dibanding Skenario B (`0.2045` vs `0.2092` dan `0.1771` vs `0.1882`) mengonfirmasi bahwa rotasi dan *blur* sedikit melunakkan batas persegi OBB pada evaluasi IoU ketat, meski tetap berguna sebagai regularisasi.
+
 ---
 
 ## 2. Profil Sumber Data Shift (`Panoptic Indoor` vs `Dataset Manual`)
@@ -99,7 +123,35 @@ Seluruh `40` foto manual diubah menjadi *Grayscale + CLAHE (`clipLimit=2.0, tile
 
 ---
 
-## 4. Bukti Visual: 12 Panel Perbandingan Segmentasi (`Test Asli` vs `Dataset Manual`)
+## 4. Analisis Mengapa Hasil Evaluasi Seluruh Model Masih Rendah
+
+Meskipun `Mask2Former-Large` (`mAP@50 = 0.3661` validasi) dan `YOLOv26l-seg` (`0.3065`) telah melampaui *baseline* Roboflow (`0.2540`), skor absolut ketiga model masih tergolong rendah (`0.1976–0.3661` di validasi dan `0.0603–0.2547` di dataset manual). Audit langsung terhadap file dataset membuktikan empat faktor pembatas utama:
+
+### 4.1 Jumlah Data Latih Asli Sangat Sedikit (`396` Foto Unik)
+- Folder `train` berisi `1.191` gambar, tetapi hasil inspeksi *filename prefix* `.rf.` membuktikan bahwa **`1.191` gambar tersebut berasal dari hanya `396` foto sumber unik** yang diduplikasi secara *offline* `3x` melalui augmentasi Roboflow (`50%` *horizontal flip*, rotasi `-10..+10` derajat, kecerahan `-15..+15%`, dan *Gaussian blur* `0–2.5 px`).
+- Dengan hanya `396` adegan ruangan unik di `train` (lebih sedikit daripada gabungan foto unik `valid = 166` + `test = 359` = `525` adegan unik!), model berkapasitas besar (*Large*) sangat cepat menghafal tekstur lokal (*overfitting*, terlihat pada kenaikan `val_loss` setelah epoch 5–7 di Skenario A). Pada Skenario C, gambar yang sudah diburamkan/diputar oleh Roboflow terkena augmentasi kedua kali (*double augmentation*).
+
+### 4.2 Jumlah Kelas Terlalu Banyak (`74` Kelas) dengan Ketimpangan Ekstrem (*Long-Tail* & *Zero-Shot*)
+- `396` foto unik harus membagi kapasitas klasifikasi ke **`74` kelas** (*median* hanya `54` anotasi per kelas di `train` dan `6` anotasi di `valid`):
+  - **`9` kelas memiliki `0` contoh latih sama sekali di `train`**: `flower`, `hair drier`, `keyboard`, `mouse`, `scissor`, `scissors`, `teddy bear`, `toaster`, dan `toothbrush`. Kelas seperti `keyboard`, `mouse`, dan `scissors` muncul di `valid`/`test` atau dataset manual (`7` GT `scissors`, `2` GT `keyboard`, `1` GT `mouse`), sehingga otomatis menghasilkan **`AP = 0.0000`** karena model tidak pernah melihatnya saat pelatihan.
+  - **`14` kelas lain hanya memiliki `1–9` anotasi di `train`** (contoh: `toilet` 6, `wall` 6, `st-` 3, `paper-merged` 3, `tree-merged` 3), dan total **`33` dari `74` kelas (`44,6%`) memiliki kurang dari `30` anotasi latih**.
+  - **Rasio ketimpangan > `750 : 1`**: Kelas dominan `wall-other-merged` memiliki `2.269` anotasi (`16,9%` dari seluruh `13.405` anotasi `train`), berbanding hanya `3` anotasi pada kelas langka.
+  - **Ambiguitas & Noise Taksonomi**: Terdapat label ganda/terpotong seperti `scissor` vs `scissors`, `paper` vs `paper-merged`, label rusak `st-`, serta pemecahan dinding menjadi 6 subkelas (`wall`, `wall-brick`, `wall-other-merged`, `wall-stone`, `wall-tile`, `wall-wood`). Hal ini menjelaskan mengapa **evaluasi *Class-Agnostic* pada dataset manual mencapai `mAP@50 = 0.4131–0.4721`**, jauh melampaui *Class-Aware* (`0.0603–0.2547`).
+
+### 4.3 Kondisi Foto & Prapemrosesan Dataset yang Destruktif
+- **Kondisi Dataset Asli (*Panoptic Indoor*)**:
+  1. **Kehilangan Warna (*Grayscale CRT + Auto-contrast*)**: Seluruh gambar direduksi menjadi hitam-putih kontras ekstrem (`R = G = B`), menghilangkan sinyal warna krusial untuk membedakan objek visual berdekatan.
+  2. **Distorsi Geometri (*Stretch `432x432`*) & *Blur* Permanen**: Semua foto direntangkan tanpa menjaga rasio aspek dan sudah diberi *Gaussian blur* permanen `0–2.5 px`, mengaburkan tepi objek kecil seperti `spoon`, `fork`, `plug`, dan `light`.
+  3. **Anotasi OBB 4-Titik Kasar**: Pemeriksaan seluruh label membuktikan **`100%` anotasi (`13.405` train, `2.022` valid, `5.344` test) hanya berupa kotak miring 4 titik sudut**, bukan poligon kontur benda. Model dipaksa belajar memasukkan piksel latar belakang ke dalam mask, sehingga skor `IoU` ketat (`mAP@75` dan `mAP@50-95`) tertekan.
+- **Kondisi Foto Dataset Manual (`viskom-data-sendiri`)**:
+  - Diambil langsung dengan kamera *smartphone* dalam kondisi **RGB natural**, didominasi aspek rasio **portrait `9:16`** (`35/40` foto `720x1280`, plus hingga `2250x4000`), pencahayaan indoor hangat/beragam, jarak pengambilan *close-up* padat (hingga `18` objek per foto), dan dievaluasi terhadap poligon organik presisi piksel — kondisi yang bertolak belakang dengan distribusi data latih.
+
+### 4.4 Batas Anggaran Komputasi & Jadwal Pelatihan (`15` Epoch, `IMG_SIZE = 448`)
+- Karena `9` kombinasi eksperimen dijalankan dalam batas sesi Kaggle `2x T4` (`35.889,66` detik = `~9,97` jam), pelatihan dibatasi pada **`15` epoch**, **`IMG_SIZE = 448`**, dan **`BATCH_SIZE = 2` (`GRAD_ACCUM_STEPS = 4`)**. Durasi 15 epoch belum cukup bagi *two-stage detector* besar seperti `Mask-RCNN-Large` (`ResNet-101-FPN`) untuk menstabilkan kepala klasifikasi 74 kelas (`mAP@50 = 0.1976`), sementara resolusi `448x448` menekan `AP_small` menjadi `0.0000` pada foto *smartphone*.
+
+---
+
+## 5. Bukti Visual: 12 Panel Perbandingan Segmentasi (`Test Asli` vs `Dataset Manual`)
 
 Seluruh 12 panel perbandingan dirender pada `conf >= 0.25` dengan urutan kolom: **Ground Truth | Mask2Former-Large (Skn B) | YOLOv26l-seg (Skn B) | Mask-RCNN-Large (Skn C)**.
 
@@ -142,7 +194,7 @@ Seluruh 12 panel perbandingan dirender pada `conf >= 0.25` dengan urutan kolom: 
 
 ---
 
-## 5. Rekomendasi Mitigasi Data Shift
+## 6. Rekomendasi Mitigasi Data Shift
 
 1. **Penyelarasan Domain Inferensi Selektif Arsitektur**: Aktifkan *Grayscale + CLAHE* secara bawaan hanya saat menjalankan `YOLOv26l-seg` (`+18,8%` `mAP@50`), sedangkan `Mask2Former-Large` dan `Mask-RCNN-Large` harus tetap menerima input RGB penuh.
 2. **Augmentasi Pelatihan Multi-Domain**: Tambahkan *Strong ColorJitter / RandomGrayscale* pada data latih grayscale serta *letterbox multi-aspect-ratio padding* agar model tidak overfit terhadap bingkai `432x432` persegi.
@@ -151,7 +203,7 @@ Seluruh 12 panel perbandingan dirender pada `conf >= 0.25` dengan urutan kolom: 
 
 ---
 
-## 6. Struktur Repositori & Cara Menjalankan
+## 7. Struktur Repositori & Cara Menjalankan
 
 ```text
 Instance-Segmentation-Panoptic/
